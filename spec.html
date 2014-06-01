@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Metrics 2.0: Spec</title>
+    {{ template "chrome/meta.html" . }}
+  </head>
+  <body>
+    {{ template "chrome/header.html" . }}
+                              <div class="container">
+                                  <br/>
+                                  <br/>
+
+
+
+<h2>Metrics 2.0 spec</h2>
+
+<br/>
+<ul>
+    <li><a href="#wire_format">Metrics 2.0 as a wire format</a></li>
+    <li><a href="#conceptual">Metrics 2.0 as conceptual data-model</a></li>
+    <li>
+        <a href="#tagging_guidelines">Tagging guidelines</a>
+        <ul>
+            <li><a href="#units">Units</a></li>
+            <li><a href="#keys_and_vals">Keys and values to use</a></li>
+        </ul>
+    </li>
+    <li>
+        <a href="#examples">Examples</a>
+        <ul>
+            <li><a href="#example_swift_proxy_timings">Swift proxy-server timings</a></li>
+            <li><a href="#example_disk_space">Disk space</a></li>
+            <li><a href="#example_page_req_statsdaemon">Page request tracking using statsdaemon</a></li>
+        </ul>
+    </li>
+</ul>
+
+<br/>
+<h3 id="#wire_format">Metrics 2.0 as a wire format</h3>
+In simple protocols like the carbon protocol, we can serialize the structured metric in a string representation that's compatible with graphite.
+<pre>
+    tags  meta_tags value timestamp
+</pre>
+<ul>
+    <li>A tag looks like key=val or just val. tags are space separated.  Note double space to separate tags from meta_tags</li>
+    <li>A tag in 'tags', is intrinsic: it contributes to the identity of the metric. If this section changes, we get a new metric identifier</li>
+    <li>A tag in 'meta_tags' is extrinsic: it provides additional information about the metric.  changes in this set doesn't change the metric identity</li>
+    <li>There are no specific requirements of order of tags.  For intrinsic tags, pick an order and stick with it, otherwise the metric id will change</li>
+    <li>In metrics storage databases we'll typically reference the timeseries by a key. If this is the serialized set of intrinsic tags of the metric2.0, things are clearer when working with the raw data, although you could also use another key and keep an explicit mapping.  As long as you somehow associate the structured data model (see below) with the timeseries</li>
+    <li>The words that you'd typically put in your metric identifier, should become tag values</li>
+    <li>Tag values should get a tag key.  The key basically describes the dimension/property</li>
+    <li>Try to come up with a short, but descriptive and fitting key.  Keys are useful for specifying aggregations, grouping and filtering.  If you can't, you can leave out the key.  it will be automatically assigned (n1, n2, ...) so that you can query for 'avg by n2' etc</li>
+    <li><b>A unit tag is mandatory</b>.  See <a href="#units">units</a></li>
+</ul>
+
+<br/>
+<br/>
+<h3 id="#conceptual">Metrics 2.0 as conceptual data-model</h3>
+This is how we typically represent metrics 2.0
+    <div class="row">
+        <div class="col-lg-6">
+          <h4>Standard metric 2.0</h4>
+            <pre>
+{
+    foo=bar
+    unit=B
+}
+          </pre>
+      </div>
+      <div class="col-lg-6">
+          <h4>Metric 2.0 extended with meta data</h4>
+          <pre>
+{
+    foo=bar
+    unit=B
+}
+meta: {
+    something=else
+}
+          </pre>
+  </div>
+  </div>
+
+<ul>
+    <li>metrics should be self describing</li>
+    <li>characters that should be allowed: (at least) alphanumerics (case sensitive), underscore, hyphen, dot, forward slash and equals sign. (units can contain slash, ip/hostname can contain dot)</li>
+</ul>
+
+<br/>
+<br/>
+<h3 id="tagging_guidelines">Tagging guidelines</h3>
+Recommendations for units and other tag keys and values follow below.
+<br/>note that in general, try to keep everything lowercase except where upper casing is sensible (e.g. units and prefixes that use capitals (M, B,...), or commonly capitalized terms such as http verbs (GET/PUT).
+<br/>the lists below are designed to be widely applicable (i.e. across companies)
+
+<br/>
+<br/>
+<h4 id="units">Units</h4>
+The unit tag is one of the most import tags.  It represents the unit of magnitude of the measured quantity.  It's important that every metric
+has the correct value for the unit tag.
+<br/>Units in metrics 2.0 are <a href="http://en.wikipedia.org/wiki/International_System_of_Units">SI</a> units (base and derived) and <a href="http://en.wikipedia.org/wiki/Binary_prefix">IEC</a> units, extended with units commonly used in IT (the "extensions").
+<br/>
+The extensions are designed to be intuitive (i.e. as commonly used by <a href="http://strftime.org/">strftime</a>), however, are to never conflict with SI or IEC.
+
+
+    {{ template "chrome/symbol-table-start.html" . }}
+<tr><td>b</td><td><a href="http://en.wikipedia.org/wiki/Bit#Unit_and_symbol">bit</a></td></tr>
+<tr><td>B</td><td><a href="http://en.wikipedia.org/wiki/Bit#Unit_and_symbol">byte</a></td></tr>
+<tr><td>M</td><td>minute (strftime)</td></tr>
+<tr><td>h</td><td>hour (strftime)</td></tr>
+<tr><td>d</td><td>day (strftime) </td></tr>
+<tr><td>w</td><td>week (strftime)</td></tr>
+<tr><td>mo</td><td>month (not 'm' like in strftime because that would be SI conflict)</td></tr>
+<tr><td>unknown</td><td>for legacy inputs where you don't know the unit. (structured metrics catchall plugins use this)</td></tr>
+
+<tr><td>Err</td><td>errors</td></tr>
+<tr><td>Warn</td><td>warnings</td></tr>
+
+<tr><td>Conn</td><td>connections</td></tr>
+<tr><td>Event</td><td>events (TCP events etc)</td></tr>
+<tr><td>Ino</td><td>inodes</td></tr>
+<tr><td>Email</td><td>email messages</td></tr>
+<tr><td>Jiff</td><td>jiffies (i.e. for cpu usage)</td></tr>
+<tr><td>Job</td><td>job (as in job queue)</td></tr>
+<tr><td>File</td><td>(not 'F' that's farad)</td></tr>
+<tr><td>Load</td><td>cpu load</td></tr>
+<tr><td>Metric</td><td>a metric line like in the statsd or graphite protocol</td></tr>
+<tr><td>Msg</td><td>message (like in message queues)</td></tr>
+<tr><td>P</td><td> probability (between 0 and 1)</td></tr>
+<tr><td>Page</td><td>page (as in memory segment)</td></tr>
+<tr><td>Pckt</td><td>network packet</td></tr>
+<tr><td>Process</td><td>process</td></tr>
+<tr><td>Req</td><td>http requests, database queries, etc</td></tr>
+<tr><td>Sock</td><td>sockets</td></tr>
+<tr><td>Thread</td><td>thread</td></tr>
+<tr><td>Ticket</td><td> upload tickets, kerberos tickets, ..</td></tr>
+    {{ template "chrome/symbol-table-end.html" . }}
+
+Of course, we also utilize prefixes, <a href="http://en.wikipedia.org/wiki/SI_prefix#List_of_prefixes">SI prefixes</a>
+and <a href="http://en.wikipedia.org/wiki/Binary_prefix">IEC binary prefixes</a>.  The most common ones are in the table below.
+    {{ template "chrome/symbol-table-start.html" . }}
+<tr><td>μ</td><td> micro, 10^-6</td></tr>
+<tr><td>m</td><td> milli, 10^-3</td></tr>
+<tr><td>c</td><td>centi, 10^-2</td></tr>
+<tr><td>d</td><td>deci, 10^-1</td></tr>
+<tr><td>k</td><td>kilo, 10^3</td></tr>
+<tr><td>M</td><td>mega, 10^6</td></tr>
+<tr><td>G</td><td>giga, 10^9</td></tr>
+<tr><td>T</td><td>tera, 10^12</td></tr>
+    {{ template "chrome/symbol-table-end.html" . }}
+
+    {{ template "chrome/symbol-table-start.html" . }}
+<tr><td>Ki</td><td>kibi 1024</td></tr>
+<tr><td>Mi</td><td>mebi, 1024^2</td></tr>
+<tr><td>Gi</td><td>gibi, 1024^3</td></tr>
+<tr><td>Ti</td><td>tebi, 1024^4</td></tr>
+<tr><td>Pi</td><td>pebi, 1024^5</td></tr>
+<tr><td>Ei</td><td>exbi, 1024^6</td></tr>
+    {{ template "chrome/symbol-table-end.html" . }}
+
+...Also compound units (with a prefix) are supported.  I.e. kHz, MB/s, etc.
+Note that out of consistency we'll prefer to use 'Mb/s' over 'Mbps'.
+<!-- also GE doesn't support the latter yet -->
+<br/>
+Carbon tagger and structured_metrics will set the unit to Mb/s whether the unit in the serialized key is Mbps or Mb/s.
+
+<br/>
+<br/>
+<h4 id="keys_and_vals">Keys and values to use</h4>
+    {{ template "chrome/key-table-start.html" . }}
+    <tr><td>server</td><td>physical or virtual machine ('system' or 'host' seem a tad too vague)</td></tr>
+    <tr><td>http_method</td><td>the http method. like PUT, GET, etc.</td></tr>
+    <tr><td>http_code</td><td>200, 404, etc</td></tr>
+    <tr><td>device</td><td>block device, network device, ...</td></tr>
+    <tr><td>unit</td><td>the unit something is expressed in (b/s, MB, etc)</td></tr>
+    <tr><td>what</td><td>the thing being measured, if the other tags (unit, type, ..) are not sufficient or appropriate.</td></tr>
+    <tr><td>type</td><td>further describe the metric.  type is a very generic word, only use it if you really don't know anything better.</td></tr>
+    <tr><td>result</td><td>values: ok, fail, ... (for http requests, http_code is probably more useful)</td></tr>
+    <tr><td>stat</td><td>if the metric is a statistical view or summary statistic,
+        {{ template "chrome/value-table-start.html" . }}
+        <tr><td>lower</td><td>lowest value seen</td></tr>
+        <tr><td>upper</td><td>highest value seen</td></tr>
+        <tr><td>mean</td><td>standard mean</td></tr>
+        <tr><td>std</td><td>standard deviation</td></tr>
+        <tr><td>*_NUM</td><td>the NUM percentile of the stat</td></tr>
+    {{ template "chrome/symbol-table-end.html" . }}
+    
+    
+    </td></tr>
+<tr><td>bin_upper</td><td>if your metrics are separated into bins by some numeric value, upper limit of a bin (like (statsd) histograms)
+    <tr><td>direction</td><td> in/out (not 'tx' or 'rx', more consistent)</td></tr>
+    <tr><td>target_type</td><td>aka metric type.
+        {{ template "chrome/value-table-start.html" . }}
+    <tr><td>rate</td><td> a number per second (implies that unit ends on '/s')</td></tr>
+    <tr><td>count</td><td> a number per a given interval (such as a statsd flushInterval); not very useful</td></tr>
+    <tr><td>gauge</td><td> values at each point in time</td></tr>
+    <tr><td>counter</td><td> a number that keeps increasing over time (but might wrap/reset at some points) (no statsd counterpart), i.e. a gauge with the added notion of "i usually want to derive this"</td></tr>
+    <tr><td>timestamp:</td><td> value represents a unix timestamp. so basically a gauge or counter but we know we can also render the "age" at each point.</td></tr>
+    {{ template "chrome/symbol-table-end.html" . }}
+</td></tr>
+<tr><td>*</td><td>
+        {{ template "chrome/value-table-start.html" . }}
+        <tr><td>_sum_</td><td>represents the sum of all other (would-be) metrics summed across this tag. ( equivalence)</td></tr>
+        <tr><td>_avg_</td><td>represents the avg of all other (would-be) metrics averaged across this tag. (equivalence)</tr>
+    {{ template "chrome/symbol-table-end.html" . }}
+</td></tr>
+    {{ template "chrome/symbol-table-end.html" . }}
+
+
+    under consideration:
+    <ul>
+        <li>something in percent. do we add _pct to the unit or target_type tag? or normalized=100?</li>
+    </ul>
+
+
+<br/>
+<h3 id="examples">Examples</h3>
+Note that in these examples we include a value and timestamp in the wire protocols, but other than that they are not relevant,
+because metrics 2.0 only concerns itself with "metrics", the pieces of information that point to, and describe the timeseries data,
+not the actual timeseries data itself.
+<h4 id="example_swift_proxy_timings">Swift proxy-server timings</h4>
+Here's an example of using a <b>traditional, existing metric and using structured_metrics to turn it into a metric 2.0</b>.
+<div class="row">
+<div class="col-lg-12">
+<br/>
+This is an output from statsd, going into our storage system, graphite:
+    <pre>
+stats.timers.dfsproxy1.proxy-server.object.GET.206.timing.upper_90 164 1234567890
+    </pre>
+</div>
+<div class="col-lg-12">
+Structured_metrics will upgrade the metric to (and store it in the database):
+          <pre>
+{
+    what=response_time
+    http_code=206
+    http_method=GET
+    server=dfsproxy1
+    service=proxy-server
+    stat=upper_90
+    swift_type=object
+    target_type=gauge
+    unit=ms
+}
+          </pre>
+</div>
+</div>
+This allows dashboards such as Graph-Explorer to automatically build graphs to answer queries like
+"show me the upper 90th percentile of response time, in ms of swift proxy-servers, on a graph per http method, averaged across all servers, on a line per swift type and http code".
+<br/>("stat=upper_90 response unit=ms proxy-server group by http_method avg by server")
+
+<h4 id="example_disk_space">Disk space</h4>
+Here's an example of using a hypothetical monitoring agent "diamond2", to <b>submit native metrics 2.0</b> to track used disk space on a given mountpoint (file system) on a given server.
+<div class="row">
+        <div class="col-lg-12">
+<br/>
+The agent emits
+            <pre>
+mountpoint=/srv/node/dfs3 what=disk_space server=dfs4 target_type=gauge type=used unit=B   agent=diamond2 48929424224 1234567890
+            </pre>
+      </div>
+      <div class="col-lg-12">
+Carbon-tagger (or structured_metrics) will put in the database:
+          <pre>
+id=mountpoint=/srv/node/dfs3,what=disk_space,server=dfs4,target_type=gauge,type=used,unit=B
+{
+    mountpoint=/srv/node/dfs3
+    what=disk_space
+    server=dfs4
+    target_type=gauge
+    type=used
+    unit=B
+}
+meta: {
+    agent=diamond2
+}
+          </pre>
+</div>
+  </div>
+This allows dashboards such as Graph-Explorer to automatically build graphs to answer queries like
+"show me how the amount of used space, summed across all mountpoints on a server, changes over time, in GB/hour, per server"
+<br/>("unit=GB/h used sum by mountpoint group by server")
+<br/>Note that if we switch to a different agent, the id will stay the same.
+
+<h4 id="example_page_req_statsdaemon">Page request tracking using statsdaemon</h4>
+This time, not only do we use <b>native metrics 2.0, we'll actually use statsdaemon to aggregate our metrics and express the aggregation using metrics 2.0</b>.
+<div class="row">
+        <div class="col-lg-12">
+<br/>
+Let's say we have a PHP codebase of a website, firing off statsd[aemon] messages (the metric "key" is native metrics 2.0) to track page requests, like so:
+
+            <pre>
+Statsd::inc("site=mydomain unit=Req server=web12");
+            </pre>
+      </div>
+        <div class="col-lg-12">
+<br/>
+Our aggregator, statsdaemon will calculate how many of these it sees per minute, and forward the rate per second into graphite, like so:
+
+            <pre>
+site=mydomain target_type=rate unit=Req/s server=web12  agent=statsdaemon1 234 1234567890
+            </pre>
+      </div>
+      <div class="col-lg-12">
+Carbon-tagger (or structured_metrics) will put in the database:
+          <pre>
+id=site=mydomain,target_type=rate,unit=Req/s
+{
+    site=mydomain
+    target_type=rate
+    unit=Req/s
+    server=web12
+}
+meta: {
+    agent=statsdaemon1
+}
+          </pre>
+</div>
+  </div>
+This allows dashboards such as Graph-Explorer to automatically build graphs to answer queries like
+"show me how many page requests per hour every site does (summed across all servers)".
+<br/>("unit=Req/h sum by server")
+<br/>Note that if we switch to a different agent, the id will stay the same.
+
+          {{ template "chrome/footer.html" . }}
+    </div> <!-- container -->
+  </body>
+</html>
+
