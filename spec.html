@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8">
     <title>Metrics 2.0: Spec</title>
-    {{ template "chrome/meta.html" . }}
+    {{ template "partials/meta.html" . }}
   </head>
   <body>
-    {{ template "chrome/header.html" . }}
+    {{ template "partials/header.html" . }}
                               <div class="container">
                                   <br/>
                                   <br/>
@@ -104,7 +104,7 @@ has the correct value for the unit tag.
 The extensions are designed to be intuitive (i.e. as commonly used by <a href="http://strftime.org/">strftime</a>), however, are to never conflict with SI or IEC.
 
 
-    {{ template "chrome/symbol-table-start.html" . }}
+    {{ template "partials/symbol-table-start.html" . }}
 <tr><td>b</td><td><a href="http://en.wikipedia.org/wiki/Bit#Unit_and_symbol">bit</a></td></tr>
 <tr><td>B</td><td><a href="http://en.wikipedia.org/wiki/Bit#Unit_and_symbol">byte</a></td></tr>
 <tr><td>M</td><td>minute (strftime)</td></tr>
@@ -135,11 +135,11 @@ The extensions are designed to be intuitive (i.e. as commonly used by <a href="h
 <tr><td>Sock</td><td>sockets</td></tr>
 <tr><td>Thread</td><td>thread</td></tr>
 <tr><td>Ticket</td><td> upload tickets, kerberos tickets, ..</td></tr>
-    {{ template "chrome/symbol-table-end.html" . }}
+    {{ template "partials/symbol-table-end.html" . }}
 
 Of course, we also utilize prefixes, <a href="http://en.wikipedia.org/wiki/SI_prefix#List_of_prefixes">SI prefixes</a>
 and <a href="http://en.wikipedia.org/wiki/Binary_prefix">IEC binary prefixes</a>.  The most common ones are in the table below.
-    {{ template "chrome/symbol-table-start.html" . }}
+    {{ template "partials/symbol-table-start.html" . }}
 <tr><td>μ</td><td> micro, 10^-6</td></tr>
 <tr><td>m</td><td> milli, 10^-3</td></tr>
 <tr><td>c</td><td>centi, 10^-2</td></tr>
@@ -148,16 +148,16 @@ and <a href="http://en.wikipedia.org/wiki/Binary_prefix">IEC binary prefixes</a>
 <tr><td>M</td><td>mega, 10^6</td></tr>
 <tr><td>G</td><td>giga, 10^9</td></tr>
 <tr><td>T</td><td>tera, 10^12</td></tr>
-    {{ template "chrome/symbol-table-end.html" . }}
+    {{ template "partials/symbol-table-end.html" . }}
 
-    {{ template "chrome/symbol-table-start.html" . }}
+    {{ template "partials/symbol-table-start.html" . }}
 <tr><td>Ki</td><td>kibi 1024</td></tr>
 <tr><td>Mi</td><td>mebi, 1024^2</td></tr>
 <tr><td>Gi</td><td>gibi, 1024^3</td></tr>
 <tr><td>Ti</td><td>tebi, 1024^4</td></tr>
 <tr><td>Pi</td><td>pebi, 1024^5</td></tr>
 <tr><td>Ei</td><td>exbi, 1024^6</td></tr>
-    {{ template "chrome/symbol-table-end.html" . }}
+    {{ template "partials/symbol-table-end.html" . }}
 
 ...Also compound units (with a prefix) are supported.  I.e. kHz, MB/s, etc.
 Note that out of consistency we'll prefer to use 'Mb/s' over 'Mbps'.
@@ -168,7 +168,7 @@ Carbon tagger and structured_metrics will set the unit to Mb/s whether the unit 
 <br/>
 <br/>
 <h4 id="keys_and_vals">Keys and values to use</h4>
-    {{ template "chrome/key-table-start.html" . }}
+    {{ template "partials/key-table-start.html" . }}
     <tr><td>server</td><td>physical or virtual machine ('system' or 'host' seem a tad too vague)</td></tr>
     <tr><td>http_method</td><td>the http method. like PUT, GET, etc.</td></tr>
     <tr><td>http_code</td><td>200, 404, etc</td></tr>
@@ -178,34 +178,34 @@ Carbon tagger and structured_metrics will set the unit to Mb/s whether the unit 
     <tr><td>type</td><td>further describe the metric.  type is a very generic word, only use it if you really don't know anything better.</td></tr>
     <tr><td>result</td><td>values: ok, fail, ... (for http requests, http_code is probably more useful)</td></tr>
     <tr><td>stat</td><td>if the metric is a statistical view or summary statistic,
-        {{ template "chrome/value-table-start.html" . }}
+        {{ template "partials/value-table-start.html" . }}
         <tr><td>lower</td><td>lowest value seen</td></tr>
         <tr><td>upper</td><td>highest value seen</td></tr>
         <tr><td>mean</td><td>standard mean</td></tr>
         <tr><td>std</td><td>standard deviation</td></tr>
         <tr><td>*_NUM</td><td>the NUM percentile of the stat</td></tr>
-    {{ template "chrome/symbol-table-end.html" . }}
+    {{ template "partials/symbol-table-end.html" . }}
     
     
     </td></tr>
 <tr><td>bin_upper</td><td>if your metrics are separated into bins by some numeric value, upper limit of a bin (like (statsd) histograms)
     <tr><td>direction</td><td> in/out (not 'tx' or 'rx', more consistent)</td></tr>
     <tr><td>target_type</td><td>aka metric type.
-        {{ template "chrome/value-table-start.html" . }}
+        {{ template "partials/value-table-start.html" . }}
     <tr><td>rate</td><td> a number per second (implies that unit ends on '/s')</td></tr>
     <tr><td>count</td><td> a number per a given interval (such as a statsd flushInterval); not very useful</td></tr>
     <tr><td>gauge</td><td> values at each point in time</td></tr>
     <tr><td>counter</td><td> a number that keeps increasing over time (but might wrap/reset at some points) (no statsd counterpart), i.e. a gauge with the added notion of "i usually want to derive this"</td></tr>
     <tr><td>timestamp:</td><td> value represents a unix timestamp. so basically a gauge or counter but we know we can also render the "age" at each point.</td></tr>
-    {{ template "chrome/symbol-table-end.html" . }}
+    {{ template "partials/symbol-table-end.html" . }}
 </td></tr>
 <tr><td>*</td><td>
-        {{ template "chrome/value-table-start.html" . }}
+        {{ template "partials/value-table-start.html" . }}
         <tr><td>_sum_</td><td>represents the sum of all other (would-be) metrics summed across this tag. ( equivalence)</td></tr>
         <tr><td>_avg_</td><td>represents the avg of all other (would-be) metrics averaged across this tag. (equivalence)</tr>
-    {{ template "chrome/symbol-table-end.html" . }}
+    {{ template "partials/symbol-table-end.html" . }}
 </td></tr>
-    {{ template "chrome/symbol-table-end.html" . }}
+    {{ template "partials/symbol-table-end.html" . }}
 
 
     under consideration:
@@ -323,7 +323,7 @@ This allows dashboards such as Graph-Explorer to automatically build graphs to a
 <br/>("unit=Req/h sum by server")
 <br/>Note that if we switch to a different agent, the id will stay the same.
 
-          {{ template "chrome/footer.html" . }}
+          {{ template "partials/footer.html" . }}
     </div> <!-- container -->
   </body>
 </html>
