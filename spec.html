@@ -169,7 +169,7 @@ Carbon tagger and structured_metrics will set the unit to Mb/s whether the unit 
 <br/>
 <h4 id="keys_and_vals">Keys and values to use</h4>
     {{ template "partials/key-table-start.html" . }}
-    <tr><td>server</td><td>physical or virtual machine ('system' or 'host' seem a tad too vague)</td></tr>
+    <tr><td>host</td><td>physical or virtual machine (deprecated: server)</td></tr>
     <tr><td>http_method</td><td>the http method. like PUT, GET, etc.</td></tr>
     <tr><td>http_code</td><td>200, 404, etc</td></tr>
     <tr><td>device</td><td>block device, network device, ...</td></tr>
@@ -179,8 +179,8 @@ Carbon tagger and structured_metrics will set the unit to Mb/s whether the unit 
     <tr><td>result</td><td>values: ok, fail, ... (for http requests, http_code is probably more useful)</td></tr>
     <tr><td>stat</td><td>if the metric is a statistical view or summary statistic,
         {{ template "partials/value-table-start.html" . }}
-        <tr><td>lower</td><td>lowest value seen</td></tr>
-        <tr><td>upper</td><td>highest value seen</td></tr>
+        <tr><td>min</td><td>lowest value seen (deprecated: lower)</td></tr>
+        <tr><td>max</td><td>highest value seen (deprecated: upper)</td></tr>
         <tr><td>mean</td><td>standard mean</td></tr>
         <tr><td>std</td><td>standard deviation</td></tr>
         <tr><td>*_NUM</td><td>the NUM percentile of the stat</td></tr>
