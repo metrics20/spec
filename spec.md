@@ -72,7 +72,7 @@ Key
 
 Tag key     | use
 ------------|-----:
-server      | physical or virtual machine
+host        | physical or virtual machine
 http_method | the http method. like PUT, GET, etc.
 http_code   | 200, 404, etc
 device      | block device, network device, ...
@@ -81,7 +81,7 @@ what        | the thing being measured, if the other tags don't suffice. often s
 type        | further describe the metric.  type is a very generic word, only use it if you really don't know anything better.
 result      | values: ok, fail, ... (for http requests, http_code is probably more useful)
 stat        | to clarify the statistical view
-bin_upper   | if your metrics are separated into bins by some numeric value, upper limit of a bin (like (statsd) histograms)
+bin_max     | if your metrics are separated into bins by some numeric value, upper limit of a bin (like (statsd) histograms)
 direction   | in/out (not 'tx' or 'rx', more consistent)
 mtype       | type of metric in terms of how the data should be interpreted. See below.
 unit        | in what is the magnititude being measured.  see below
@@ -179,8 +179,8 @@ Note that out of consistency, and for clarity 'Mb/s' should be used instead of '
 
 Symbol  | Meaning
 --------|-----:
-lower   | lowest value seen
-upper   | highest value seen
+min     | lowest value seen
+max     | highest value seen
 mean    | standard mean
 std     | standard deviation
 *_NUM   | the NUM percentile of the stat
@@ -217,7 +217,7 @@ Into: [^target_type]
     what=response_time
     http_code=206
     http_method=GET
-    server=dfsproxy1
+    host=dfsproxy1
     service=proxy-server
     stat=upper_90
     swift_type=object
@@ -235,7 +235,7 @@ A hypothetical monitoring agent "diamond2" could submit native metrics 2.0 to tr
 {
     mountpoint=/srv/node/dfs3
     what=disk_space
-    server=dfs4
+    host=dfs4
     target_type=gauge
     type=used
     unit=B
@@ -247,10 +247,10 @@ meta: {
 
 A hypothetical storage system could hence use something like this as the id for the corresponding series:
 ```
-id=mountpoint=/srv/node/dfs3,what=disk_space,server=dfs4,target_type=gauge,type=used,unit=B
+id=mountpoint=/srv/node/dfs3,what=disk_space,host=dfs4,target_type=gauge,type=used,unit=B
 ```
 
 Note that if we switch to a different agent, the id will stay the same because meta tags are not used to generate the identifier for the storage system.
 
 [^Mbps]: Carbon-tagger and structured_metrics will set the unit to Mb/s whether the unit in the serialized key is Mbps or Mb/s.  Also Graph-Explorer does not support the Mbps form, it does support the Mb/s form.
-[^target_type]: `target_type` was the old name for `mtype`, still used by tools such as structured_metrics and graph-explorer.  They should be updated.
+[^target_type]: `target_type` was the old name for `mtype`, still used by tools such as structured_metrics and graph-explorer.  They should be updated. They also still use 'server' instead of 'host', and lower/upper instead of min/max.
