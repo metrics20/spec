@@ -166,8 +166,10 @@ msg     | message (like in message queues)
 P       | probability (between 0 and 1)
 page    | page (as in memory segment)
 pckt    | network packet
+point   | data point
 process | process
 req     | http requests, database queries, etc
+serie   | time series
 sock    | sockets
 thread  | thread
 ticket  | upload tickets, kerberos tickets, ..
