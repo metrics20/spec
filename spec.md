@@ -88,6 +88,8 @@ unit        | in what is the magnititude being measured.  see below
 file        | file (that generated a metric)
 line        | line (that generated a metric)
 env         | environment
+dc          | datacenter
+zone        | zone
 
 
 ### Special tag values
