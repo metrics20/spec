@@ -1,3 +1,4 @@
+**project is inactive. please look at open telemetry instead**
 spec
 ====
 
